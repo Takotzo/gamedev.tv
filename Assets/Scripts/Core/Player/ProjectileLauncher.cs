@@ -4,6 +4,7 @@ using Input;
 using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Core.Player
 {
@@ -25,6 +26,7 @@ namespace Core.Player
         [SerializeField] private float muzzleFlashDuration;
         [SerializeField] private int costToFire;
 
+        private bool isPointerOverUI;
         private bool shouldFire;
         private float timer;
         private float muzzleFlashTimer;
@@ -47,6 +49,13 @@ namespace Core.Player
 
         private void HandlePrimaryFire(bool shouldFire)
         {
+            if (shouldFire)
+            {
+                if (isPointerOverUI)
+                {
+                    return;
+                }
+            }
             this.shouldFire = shouldFire;
         }
     
@@ -116,6 +125,8 @@ namespace Core.Player
             timer -= Time.deltaTime;
         
             if(!shouldFire || !IsOwner) {return;}
+
+            isPointerOverUI = EventSystem.current.IsPointerOverGameObject();
 
             if (timer > 0) { return; }
 

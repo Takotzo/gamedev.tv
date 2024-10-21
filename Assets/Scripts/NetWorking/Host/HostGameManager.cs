@@ -22,16 +22,22 @@ namespace NetWorking.Host
     public class HostGameManager : IDisposable
     {
         private Allocation allocation;
-        private string joinCode;
         private string lobbyId;
 
+        NetworkObject playerPrefab;
         public NetworkServer NetworkServer { get; private set; }
+        public string joinCode { get; private set; }
+
         
         private const int MAX_CONNECTIONS = 20;
 
         private const string GAME_SCENE_NAME = "Game";
-    
-        public async Task StartHostAsync()
+
+        public HostGameManager(NetworkObject playerPrefab)
+        {
+            this.playerPrefab = playerPrefab;
+        }
+        public async Task StartHostAsync(bool isPrivate)
         {
             try
             {
@@ -62,7 +68,7 @@ namespace NetWorking.Host
             try
             {
                 CreateLobbyOptions lobbyOptions = new CreateLobbyOptions();
-                lobbyOptions.IsPrivate = false;
+                lobbyOptions.IsPrivate = isPrivate;
                 lobbyOptions.Data = new Dictionary<string, DataObject>()
                 {
                     {
@@ -85,7 +91,7 @@ namespace NetWorking.Host
                 return;
             }
             
-            NetworkServer = new NetworkServer(NetworkManager.Singleton);
+            NetworkServer = new NetworkServer(NetworkManager.Singleton, playerPrefab);
             
             UserData userData = new UserData()
             {

@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Core;
 using NetWorking.Shared;
 using Unity.Mathematics;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NetWorking.Server
 {
     public class NetworkServer : IDisposable
     {
         private NetworkManager networkManager;
+        private NetworkObject playerPrefab;
 
         public Action<UserData> OnUserJoined;
         public Action<UserData> OnUserLeft;
@@ -20,9 +23,10 @@ namespace NetWorking.Server
         
         private Dictionary<ulong, string> clientIdToAuth = new Dictionary<ulong, string>();
         private Dictionary<string, UserData> authIdToUserData = new Dictionary<string, UserData>();
-        public NetworkServer(NetworkManager networkManager)
+        public NetworkServer(NetworkManager networkManager, NetworkObject playerPrefab)
         {
             this.networkManager = networkManager;
+            this.playerPrefab = playerPrefab;
 
             networkManager.ConnectionApprovalCallback += ApprovalCheck;
             networkManager.OnServerStarted += OnNetworkReady;
@@ -44,11 +48,21 @@ namespace NetWorking.Server
             authIdToUserData[userData.userAuthId] = userData;
             OnUserJoined?.Invoke(userData);
 
+            _ = SpawnPlayerDelayed(request.ClientNetworkId);
+            
             response.Approved = true;
-            response.Position = SpawnPoint.GetRandomSpawnPos();
-            response.Rotation = quaternion.identity;
-            response.CreatePlayerObject = true;
+            response.CreatePlayerObject = false;
         }
+
+        private async Task SpawnPlayerDelayed(ulong clientId)
+        {
+            await Task.Delay(1000);
+            
+            NetworkObject playerInstance = Object.Instantiate(playerPrefab, SpawnPoint.GetRandomSpawnPos(), Quaternion.identity );
+            
+            playerInstance.SpawnAsPlayerObject(clientId);
+        }
+        
         
         private void OnNetworkReady()
         {

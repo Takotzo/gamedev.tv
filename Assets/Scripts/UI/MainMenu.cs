@@ -6,6 +6,7 @@ using TMPro;
 using Unity.Services.Lobbies;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UI
 {
@@ -15,6 +16,8 @@ namespace UI
         [SerializeField] private TMP_Text queueTimerText;
         [SerializeField] private TMP_Text findMatchButtonText;
         [SerializeField] private TMP_InputField joinCodeField;
+        [SerializeField] private Toggle teamToggle;
+        [SerializeField] private Toggle privateToggle;
 
         private bool isMatchmaking;
         private bool isCanceling;
@@ -61,7 +64,7 @@ namespace UI
 
             if (isBusy) { return; }
             
-            ClientSingleton.Instance.GameManager.MatchmakeAsync(OnMatchMade);
+            ClientSingleton.Instance.GameManager.MatchmakeAsync(teamToggle.isOn, OnMatchMade);
             findMatchButtonText.text = "Cancel";
             queueStatusText.text = "Searching...";
             timeInQueue = 0f;
@@ -97,7 +100,7 @@ namespace UI
             
             isBusy = true;
             
-            await HostSingleton.Instance.GameManager.StartHostAsync();
+            await HostSingleton.Instance.GameManager.StartHostAsync(privateToggle.isOn);
             
             isBusy = false;
         }

@@ -28,7 +28,7 @@ namespace Core.Player
         [SerializeField] private Color ownerColor;
         
         public NetworkVariable<FixedString32Bytes> playerName = new NetworkVariable<FixedString32Bytes>();
-    
+        public NetworkVariable<int> teamIndex = new NetworkVariable<int>();
 
         public static event Action<TankPlayer> OnPlayerSpawned;
         public static event Action<TankPlayer> OnPlayerDespawn;
@@ -49,6 +49,7 @@ namespace Core.Player
                 }
 
                 playerName.Value = userData.userName;
+                teamIndex.Value = userData.teamIndex;
                 
                 OnPlayerSpawned?.Invoke(this);
             }

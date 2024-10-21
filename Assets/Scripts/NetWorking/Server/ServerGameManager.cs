@@ -30,16 +30,17 @@ namespace NetWorking.Server
         private MatchplayBackfiller backfiller;
         private MultiplayAllocationService multiplayAllocationService;
         
+        private Dictionary<string, int> teamIDToTeamIndex = new Dictionary<string, int>();
+        
         public NetworkServer NetworkServer { get; private set; }
 
-        private const string GAME_SCENE_NAME = "Game";
 
-        public ServerGameManager(string serverIP, int serverPort, int queryPort, NetworkManager manager)
+        public ServerGameManager(string serverIP, int serverPort, int queryPort, NetworkManager manager, NetworkObject playerPrefab)
         {
             this.serverIP = serverIP;
             this.serverPort = serverPort;
             this.queryPort = queryPort;
-            NetworkServer = new NetworkServer(manager);
+            NetworkServer = new NetworkServer(manager, playerPrefab);
             multiplayAllocationService = new MultiplayAllocationService();
         }
         
@@ -73,7 +74,6 @@ namespace NetWorking.Server
                 return;
             }
             
-            NetworkManager.Singleton.SceneManager.LoadScene(GAME_SCENE_NAME, LoadSceneMode.Single);
         }
 
         private async Task StaterBackfill(MatchmakingResults payload)
@@ -88,7 +88,15 @@ namespace NetWorking.Server
 
         private void UserJoined(UserData user)
         {
-            backfiller.AddPlayerToMatch(user);
+            Team team = backfiller.GetTeamByUserId(user.userAuthId);
+            if (!teamIDToTeamIndex.TryGetValue(team.TeamId, out var teamIndex))
+            {
+                teamIndex = teamIDToTeamIndex.Count;
+                teamIDToTeamIndex.Add(team.TeamId, teamIndex);
+            }
+            
+            user.teamIndex = teamIndex;
+            
             multiplayAllocationService.AddPlayer();
             if (!backfiller.NeedsPlayers() && backfiller.IsBackfilling)
             {
