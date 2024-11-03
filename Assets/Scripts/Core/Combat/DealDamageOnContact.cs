@@ -1,3 +1,4 @@
+using Core.Player;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -5,6 +6,7 @@ namespace Core.Combat
 {
     public class DealDamageOnContact : MonoBehaviour
     {
+        [SerializeField] private Projectile projectile;
         [SerializeField] private int damage = 5;
 
         private ulong ownerClientId;
@@ -17,13 +19,18 @@ namespace Core.Combat
         {
             if (other.attachedRigidbody == null) { return; }
 
-            if (other.attachedRigidbody.TryGetComponent<NetworkObject>(out NetworkObject netObj))
+            if (projectile.teamIndex != -1)
             {
-                if (ownerClientId == netObj.OwnerClientId)
+                if (other.attachedRigidbody.TryGetComponent(out TankPlayer player))
                 {
-                    return;
+                    if (player.teamIndex.Value == projectile.teamIndex)
+                    {
+                        return;
+                    }
                 }
             }
+            
+            
         
             if (other.attachedRigidbody.TryGetComponent<Health>(out Health otherHealth))
             {

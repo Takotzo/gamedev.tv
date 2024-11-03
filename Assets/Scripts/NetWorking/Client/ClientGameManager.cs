@@ -24,7 +24,7 @@ namespace NetWorking.Client
 
         private NetworkClient networkClient;
         private MatchplayMatchmaker matchplayMatchmaker;
-        private UserData userData;
+        public UserData userData { get; private set; }
 
         public async Task<bool> InitAsync()
         {

@@ -8,19 +8,21 @@ namespace UI.Leaderboard
     {
         [SerializeField] private TMP_Text displayText;
         
-        [SerializeField] private Color myColor;
         public LeaderboardEntityState LeaderboardEntityState { get; private set; }
+        
+        public int TeamIndex { get; private set; }
 
         public void Initialise(LeaderboardEntityState leaderboardEntityState)
         {
             LeaderboardEntityState = leaderboardEntityState;
-
-            if (LeaderboardEntityState.ClientId == NetworkManager.Singleton.LocalClientId)
-            {
-                displayText.color = myColor;
-            }
             
             UpdateCoins(leaderboardEntityState.Coins);
+        }
+        
+
+        public void SetColor(Color color)
+        {
+            displayText.color = color;
         }
 
         public void UpdateCoins(int coins)
